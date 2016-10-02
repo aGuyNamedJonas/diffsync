@@ -49,6 +49,8 @@ Server.prototype.trackConnection = function(connection){
  */
 Server.prototype.joinConnection = function(connection, room, initializeClient){
   this.getData(room, function(error, data){
+    console.log('Getting initial data for "room":', room, '\n', data);
+
     // connect to the room
     connection.join(room);
 
@@ -78,21 +80,32 @@ Server.prototype.joinConnection = function(connection, room, initializeClient){
  * @param  {String}   room     room identifier
  * @param  {Function} callback notifier-callback
  */
+
+/*
+    TODO: Get data exclusively from DynamoDB (scratch the cache part)
+*/
+
 Server.prototype.getData = function(room, callback){
   var cachedVersion = this.data[room],
       cache = this.data,
       requests = this.requests;
 
   if(cachedVersion){
+    console.log('Found a cached version for room ', room);
     callback(null, cachedVersion);
   }else{
     // if there is no request for this room
     // ask the adapter for the data
     // do nothing in the else case because this operation
     // should only happen once
+    console.log('No cache!');
+
     if(!requests[room]){
       requests[room] = true;
+
+      console.log('Requesting data from DB for room: ', room);
       this.adapter.getData(room, function(error, data){
+        console.log('Requested data from DB: ', data);
         cache[room] = {
           registeredSockets: [],
           clientVersions: {},
