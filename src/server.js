@@ -49,8 +49,6 @@ Server.prototype.trackConnection = function(connection){
  */
 Server.prototype.joinConnection = function(connection, room, initializeClient){
   this.getData(room, function(error, data){
-    console.log('Getting initial data for "room":', room, '\n', data);
-
     // connect to the room
     connection.join(room);
 
@@ -91,7 +89,6 @@ Server.prototype.getData = function(room, callback){
       requests = this.requests;
 
   if(cachedVersion){
-    console.log('Found a cached version for room ', room);
     callback(null, cachedVersion);
   }else{
     // if there is no request for this room
@@ -103,9 +100,7 @@ Server.prototype.getData = function(room, callback){
     if(!requests[room]){
       requests[room] = true;
 
-      console.log('Requesting data from DB for room: ', room);
       this.adapter.getData(room, function(error, data){
-        console.log('Requested data from DB: ', data);
         cache[room] = {
           registeredSockets: [],
           clientVersions: {},

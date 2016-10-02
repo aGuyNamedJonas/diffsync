@@ -4,16 +4,9 @@
  * @param {Object} cache
  */
 var AWS = require("aws-sdk");
-var fs = require('fs');
 
-var DynamoDBAdapter = function(){
-  AWS.config.update({
-     region: "eu-central-1b",
-     endpoint: "http://localhost:8000"
-  });
-
-  // Create new DB connection
-  this.db = new AWS.DynamoDB.DocumentClient();
+var DynamoDBAdapter = function(dbConnection){
+  this.db = dbConnection;
 };
 
 /**
@@ -29,14 +22,14 @@ DynamoDBAdapter.prototype.getData = function(id, cb){
 
   this.db.get(queryParams, (err, data) => {
     if(err){
+      // Call callback w/ an error
       cb(JSON.stringyfy(err, null, 2), null);
     } else {
       if(JSON.stringify(data) === '{}') {
-        console.log('Did not find what you were looking for: ', data);
+        // No document with this ID was found
         cb(null, {});
       } else {
-        console.log('Found what you were looking for: ');
-        console.dir(data);
+        // Return document data
         cb(null, JSON.parse(data.Item.data));
       }
     }
@@ -47,13 +40,13 @@ DynamoDBAdapter.prototype.getData = function(id, cb){
  * Stores `data` at `id`
  */
 DynamoDBAdapter.prototype.storeData = function(id, data, cb){
-  var unixTime = Math.floor(Date.now() / 1000);
+  var mTime = Math.floor(Date.now() / 1000);
 
   var queryParams = {
     TableName: "DiffSync",
     Item: {
       "docID": id,
-      "last-modified": unixTime,
+      "last-modified": mTime,
       "data": JSON.stringify(data)
     }
   };
