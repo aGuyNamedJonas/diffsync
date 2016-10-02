@@ -23,7 +23,8 @@ DynamoDBAdapter.prototype.getData = function(id, cb){
   this.db.get(queryParams, (err, data) => {
     if(err){
       // Call callback w/ an error
-      cb(JSON.stringyfy(err, null, 2), null);
+      cb(JSON.stringify(err, null, 2), null);
+      console.log('Error occured while putting to DB:', JSON.stringify(err, null, 2));
     } else {
       if(JSON.stringify(data) === '{}') {
         // No document with this ID was found
