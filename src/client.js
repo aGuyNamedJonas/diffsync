@@ -134,7 +134,9 @@ Client.prototype.syncWithServer = function(){
   this.syncing = true;
 
   // 1) create a diff of local copy and shadow
+  var diffStart = Date.now();
   var diff = this.createDiff(this.doc.shadow, this.doc.localCopy);
+  var diffEnd = Date.now();
   var basedOnLocalVersion = this.doc.localVersion;
 
   // 2) add the difference to the local edits stack if the diff is not empty
@@ -147,7 +149,11 @@ Client.prototype.syncWithServer = function(){
   var editMessage = this.createEditMessage(basedOnLocalVersion);
 
   // 4) apply the patch to the local shadow
+  var patchStart = Date.now();
   this.applyPatchTo(this.doc.shadow, utils.deepCopy(diff));
+  var patchEnd = Date.now();
+
+  this.emit('diffpatchduration', diffEnd - diffStart, patchEnd - patchStart);
 
   // 5) send the edits to the server
   this.sendEdits(editMessage);
