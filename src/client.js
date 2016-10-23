@@ -169,7 +169,13 @@ Client.prototype.syncWithServer = function(){
  * @return {Diff}      The diff of both documents
  */
 Client.prototype.createDiff = function(docA, docB){
-  return this.jsondiffpatch.diff(docA, docB);
+  var startTime = Date.now();
+  var diff = this.jsondiffpatch.diff(docA, docB);
+  var endTime = Date.now();
+  var duration = endTime - startTime;
+  console.log('Time it took to create diff: ' + duration + 'ms / docA size: ' + JSON.stringify(docA).length + 'ch / docB size: ' + JSON.stringify(docB).length);
+
+  return diff;
 };
 
 /**
@@ -179,7 +185,11 @@ Client.prototype.createDiff = function(docA, docB){
  * @param  {Diff} patch
  */
 Client.prototype.applyPatchTo = function(obj, patch){
+  var startTime = Date.now();
   this.jsondiffpatch.patch(obj, patch);
+  var endTime = Date.now();
+  var duration = endTime - startTime;
+  console.log('Time it took patch: ' + duration + 'ms / obj size: ' + JSON.stringify(obj).length + 'ch');
 };
 
 /**
