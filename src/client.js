@@ -72,24 +72,30 @@ Client.prototype.initialize = function(){
  * Will notify the `onConnected` callback.
  * @param  {Object} initialVersion The initial version from the server
  */
-Client.prototype._onConnected = function(initialVersion){
-  // client is not syncing anymore and is initialized
-  this.syncing = false;
-  this.initialized = true;
+Client.prototype._onConnected = function(initialVersion, error){
+  if(error){
+    // An error occured during connection
+    console.log('***Error connecting to requested document:', error);
+    window.open('/404', '_self');
+  }else{
+    // client is not syncing anymore and is initialized
+    this.syncing = false;
+    this.initialized = true;
 
-  // set up shadow doc, local doc and initial server version
-  // IMPORTANT: the shadow needs to be a deep copy of the initial version
-  // because otherwise changes to the local object will also result in changes
-  // to the shadow object because they are pointing to the same doc
-  this.doc.shadow = utils.deepCopy(initialVersion);
-  this.doc.localCopy = initialVersion;
-  this.doc.serverVersion = 0;
+    // set up shadow doc, local doc and initial server version
+    // IMPORTANT: the shadow needs to be a deep copy of the initial version
+    // because otherwise changes to the local object will also result in changes
+    // to the shadow object because they are pointing to the same doc
+    this.doc.shadow = utils.deepCopy(initialVersion);
+    this.doc.localCopy = initialVersion;
+    this.doc.serverVersion = 0;
 
-  // listen to incoming updates from the server
-  this.socket.on(COMMANDS.remoteUpdateIncoming, this.onRemoteUpdate);
+    // listen to incoming updates from the server
+    this.socket.on(COMMANDS.remoteUpdateIncoming, this.onRemoteUpdate);
 
-  // notify about established connection
-  this.emit('connected');
+    // notify about established connection
+    this.emit('connected');
+  }
 };
 
 /**
@@ -173,7 +179,7 @@ Client.prototype.createDiff = function(docA, docB){
   var diff = this.jsondiffpatch.diff(docA, docB);
   var endTime = Date.now();
   var duration = endTime - startTime;
-  console.log('Time it took to create diff: ' + duration + 'ms / docA size: ' + JSON.stringify(docA).length + 'ch / docB size: ' + JSON.stringify(docB).length);
+  // console.log('Time it took to create diff: ' + duration + 'ms / docA size: ' + JSON.stringify(docA).length + 'ch / docB size: ' + JSON.stringify(docB).length);
 
   return diff;
 };
@@ -189,7 +195,7 @@ Client.prototype.applyPatchTo = function(obj, patch){
   this.jsondiffpatch.patch(obj, patch);
   var endTime = Date.now();
   var duration = endTime - startTime;
-  console.log('Time it took patch: ' + duration + 'ms / obj size: ' + JSON.stringify(obj).length + 'ch');
+  // console.log('Time it took patch: ' + duration + 'ms / obj size: ' + JSON.stringify(obj).length + 'ch');
 };
 
 /**
