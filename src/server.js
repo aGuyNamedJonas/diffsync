@@ -48,28 +48,36 @@ Server.prototype.trackConnection = function(connection){
  * @param  {Function} initializeClient Callback that is being used for initialization of the client
  */
 Server.prototype.joinConnection = function(connection, room, initializeClient){
-  this.getData(room, function(error, data){
-    // connect to the room
-    connection.join(room);
+  // First check whether or not the document is in the database, if not refuse connection
+  this.adapter.getData(room, (err, data) => {
+    if(err === 404){
+      initializeClient(null, '404 - document not found: "', room, '"');
+    }else{
+      // If document was found, proceed as usual
+      this.getData(room, function(error, data){
+        // connect to the room
+        connection.join(room);
 
-    // set up the client version for this socket
-    // each connection has a backup and a shadow
-    // and a set of edits
-    data.clientVersions[connection.id] = {
-      backup: {
-        doc: utils.deepCopy(data.serverCopy),
-        serverVersion: 0
-      },
-      shadow: {
-        doc: utils.deepCopy(data.serverCopy),
-        serverVersion: 0,
-        localVersion: 0
-      },
-      edits: []
-    };
+        // set up the client version for this socket
+        // each connection has a backup and a shadow
+        // and a set of edits
+        data.clientVersions[connection.id] = {
+          backup: {
+            doc: utils.deepCopy(data.serverCopy),
+            serverVersion: 0
+          },
+          shadow: {
+            doc: utils.deepCopy(data.serverCopy),
+            serverVersion: 0,
+            localVersion: 0
+          },
+          edits: []
+        };
 
-    // send the current server version
-    initializeClient(data.serverCopy);
+        // send the current server version
+        initializeClient(data.serverCopy);
+      });
+    }
   });
 };
 

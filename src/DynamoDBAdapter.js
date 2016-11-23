@@ -28,7 +28,7 @@ DynamoDBAdapter.prototype.getData = function(id, cb){
     } else {
       if(JSON.stringify(data) === '{}') {
         // No document with this ID was found
-        cb(null, {});
+        cb(404, {});
       } else {
         // Return document data
         cb(null, JSON.parse(data.Item.data));
